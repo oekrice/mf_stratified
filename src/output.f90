@@ -152,10 +152,14 @@ end subroutine try
 
 SUBROUTINE save_snap(snap_number)
 
+    !Making modifications so this works with netcdf instead, which would be far more sensible
     IMPLICIT NONE
     INTEGER:: snap_number
-    CHARACTER(LEN = 64):: ax_filename, ay_filename, az_filename, vy_filename, my_filename
-    CHARACTER(LEN = 64):: t_filename
+    CHARACTER(LEN = 64):: output_filename
+    INTEGER:: ncid, vid
+    INTEGER:: xs_id, xc_id, ys_id, yc_id
+    INTEGER:: ax_id, ay_id, az_id, vy_id, my_id
+
 
     if (run_number < 10) then
       write (output_directory, "(A23, A2, I1, A1)") output_directory_root, '00', int(run_number), '/'
@@ -166,58 +170,56 @@ SUBROUTINE save_snap(snap_number)
     end if
 
     if (snap_number < 10) then
-      write (ax_filename, "(A27, A3, I1, A6)") output_directory, '000', int(snap_number), 'ax.dat'
-      write (ay_filename, "(A27, A3, I1, A6)") output_directory, '000', int(snap_number), 'ay.dat'
-      write (az_filename, "(A27, A3, I1, A6)") output_directory, '000', int(snap_number), 'az.dat'
-      write (t_filename, "(A27, A3, I1, A6)") output_directory, '000', int(snap_number), 'tt.dat'
-      write (vy_filename, "(A27, A3, I1, A6)") output_directory, '000', int(snap_number), 'vy.dat'
-      write (my_filename, "(A27, A3, I1, A6)") output_directory, '000', int(snap_number), 'my.dat'
+        write (output_filename, "(A27,A3,I1,A3)") trim(output_directory), "000", snap_number, ".nc"
     else if (snap_number < 100) then
-      write (ax_filename, "(A27, A2, I2, A6)") output_directory, '00', int(snap_number), 'ax.dat'
-      write (ay_filename, "(A27, A2, I2, A6)") output_directory, '00', int(snap_number), 'ay.dat'
-      write (az_filename, "(A27, A2, I2, A6)") output_directory, '00', int(snap_number), 'az.dat'
-      write (t_filename, "(A27, A2, I2, A6)") output_directory, '00', int(snap_number), 'tt.dat'
-      write (vy_filename, "(A27, A2, I2, A6)") output_directory, '00', int(snap_number), 'vy.dat'
-      write (my_filename, "(A27, A2, I2, A6)") output_directory, '00', int(snap_number), 'my.dat'
+        write (output_filename, "(A27,A2,I2,A3)") trim(output_directory), "00", snap_number, ".nc"
     else if (snap_number < 1000) then
-      write (ax_filename, "(A27, A1, I3, A6)") output_directory, '0', int(snap_number), 'ax.dat'
-      write (ay_filename, "(A27, A1, I3, A6)") output_directory, '0', int(snap_number), 'ay.dat'
-      write (az_filename, "(A27, A1, I3, A6)") output_directory, '0', int(snap_number), 'az.dat'
-      write (t_filename, "(A27, A1, I3, A6)") output_directory, '0', int(snap_number), 'tt.dat'
-      write (vy_filename, "(A27, A1, I3, A6)") output_directory, '0', int(snap_number), 'vy.dat'
-      write (my_filename, "(A27, A1, I3, A6)") output_directory, '0', int(snap_number), 'my.dat'
-    else
-      write (ax_filename, "(A27, I4, A6)") output_directory, int(snap_number), 'ax.dat'
-      write (ay_filename, "(A27, I4, A6)") output_directory, int(snap_number), 'ay.dat'
-      write (az_filename, "(A27, I4, A6)") output_directory, int(snap_number), 'az.dat'
-      write (t_filename, "(A27, I4, A6)") output_directory, int(snap_number), 'tt.dat'
-      write (vy_filename, "(A27, I4, A6)") output_directory, int(snap_number), 'vy.dat'
-      write (my_filename, "(A27, I4, A6)") output_directory, int(snap_number), 'my.dat'
-
+        write (output_filename, "(A27,A1,I3,A3)") trim(output_directory), "0", snap_number, ".nc"
+    else if (snap_number < 10000) then
+        write (output_filename, "(A27,I4,A3)") trim(output_directory), snap_number, ".nc"
     end if
 
-    open(1, file = ax_filename, status='replace', form="unformatted")
-    write(1) ax(1:nx,0:ny)
-    close(1)
-    open(1, file = ay_filename, status='replace', form="unformatted")
-    write(1) ay(0:nx,1:ny)
-    close(1)
-    open(1, file = az_filename, status='replace', form="unformatted")
-    write(1) az(0:nx,0:ny)
-    close(1)
-    open(1, file = t_filename, status='replace', form="unformatted")
-    write(1) t
-    close(1)
-    open(1, file = vy_filename, status='replace', form="unformatted")
-    write(1) vouts(0:nx, 0:ny)*vout_masks(0:nx, 0:ny)
-    close(1)
-    open(1, file = my_filename, status='replace', form="unformatted")
-    write(1) vy(0:nx,0:ny) + vouts(0:nx, 0:ny)*vout_masks(0:nx, 0:ny)
-    close(1)
+    print*, output_filename
 
+    call try(nf90_create(trim(output_filename), nf90_clobber, ncid))
 
+    call try(nf90_def_dim(ncid, 'xs', nx+1, xs_id))
+    call try(nf90_def_dim(ncid, 'ys', ny+1, ys_id))
+
+    call try(nf90_def_dim(ncid, 'xc', nx, xc_id))
+    call try(nf90_def_dim(ncid, 'yc', ny, yc_id))
+
+    call try(nf90_def_var(ncid, 'ax', nf90_double, (/xc_id ,ys_id/), ax_id))
+    call try(nf90_def_var(ncid, 'ay', nf90_double, (/xs_id ,yc_id/), ay_id))
+    call try(nf90_def_var(ncid, 'az', nf90_double, (/xs_id ,ys_id/), az_id))
+
+    call try(nf90_def_var(ncid, 'vy', nf90_double, (/xs_id ,ys_id/), vy_id))
+    call try(nf90_def_var(ncid, 'my', nf90_double, (/xs_id ,ys_id/), my_id))
+
+    call try(nf90_enddef(ncid))
+    call try(nf90_close(ncid))
+
+    call try(nf90_open(trim(output_filename), nf90_write, ncid))
+
+    call try(nf90_inq_varid(ncid, 'ax', vid))
+    call try(nf90_put_var(ncid, vid, ax(1:nx,0:ny)))
+
+    call try(nf90_inq_varid(ncid, 'ay', vid))
+    call try(nf90_put_var(ncid, vid, ay(0:nx,1:ny)))
+
+    call try(nf90_inq_varid(ncid, 'az', vid))
+    call try(nf90_put_var(ncid, vid, az(0:nx,0:ny)))
+
+    call try(nf90_inq_varid(ncid, 'vy', vid))
+    call try(nf90_put_var(ncid, vid, vouts(0:nx, 0:ny)*vout_masks(0:nx, 0:ny)))
+
+    call try(nf90_inq_varid(ncid, 'my', vid))
+    call try(nf90_put_var(ncid, vid, vy(0:nx,0:ny) + vouts(0:nx, 0:ny)*vout_masks(0:nx, 0:ny)))
+
+    call try(nf90_close(ncid))
 
     print*, 'Saved snapshot number', snap_number, ' at time', t, 'to directory ', output_directory
+
 END SUBROUTINE save_snap
 
 !*******************************************************************************
