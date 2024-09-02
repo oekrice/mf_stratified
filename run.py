@@ -39,16 +39,8 @@ else:
 time_unit = 1   #time unit in days. LARE seems to prefer values of around unity so do have to be careful
 voutfact = 0.0
 
-nx = 64
-ny = 64
-
-if nx == 64:
-    init_id = 515
-if nx == 128:
-    init_id = 525
-else:
-    init_id = 505
-    
+nx = 128
+ny = 128
 
 x0 = -0.5; x1 = 0.5
 y0 = -1.0/ny; y1 = 1.0
@@ -64,7 +56,7 @@ eta = 1e-6
 eta0 = np.geomspace(1e-4,5e-3,10)[(run%50)%10]
 nu0 = np.geomspace(0.05,0.5,10)[(run%50)//10]
 
-decay_type = 0
+decay_type = 1   #1 for exponential, 0 for tanh
 
 def lbound_fn(x):
     #Outputs lower boundary radial magnetic field as a function of position x
@@ -74,9 +66,9 @@ def lbound_fn(x):
 def zero_fn(x):
     return 0.0
 
-if decay_type > 0.5: #expoential decay
+if decay_type > 0.5: #exponential decay
     a = np.linspace(0.0,1.0,10)[run//50]; b = 0.5
-    deltay = 0.0; ystar = 0.0
+    deltay = 1.0; ystar = 1.0
 
 else:   #for the tanh cutoff
     a = 0.5; b = 1.0
@@ -111,7 +103,7 @@ variables[18] = hamilton_flag
 variables[19] = ndiags
 
 variables[20] = ny
-variables[21] = init_id   #init id  (id of initial condition)
+variables[21] = nx   #init id  (id of initial condition)
 
 variables[22] = nu0_decay
 
