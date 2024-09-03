@@ -39,8 +39,8 @@ else:
 time_unit = 1   #time unit in days. LARE seems to prefer values of around unity so do have to be careful
 voutfact = 0.0
 
-nx = 64
-ny = 64
+nx = 256
+ny = 256
 
 x0 = -0.5; x1 = 0.5
 y0 = -1.0/ny; y1 = 1.0
@@ -53,11 +53,9 @@ ndiags = 600
 tmax = 150.0/time_unit
 
 eta = 1e-6
-#eta0 = np.geomspace(1e-4,5e-3,10)[(run%50)%10]
-#nu0 = np.geomspace(0.05,0.5,10)[(run%50)//10]
 
-nu0 = 0.1
-eta0 = 1e-3
+nu0 = np.geomspace(0.05,0.2)[(run%50)//10]
+eta0 = np.geomspace(7.5e-4,1.25e-3,10)[(run%50)%10]
 
 decay_type = 1   #1 for exponential, 0 for tanh
 
@@ -70,7 +68,7 @@ def zero_fn(x):
     return 0.0
 
 if decay_type > 0.5: #exponential decay
-    a = 0.1; b = np.linspace(0.0,1.0,5)[run]
+    a = 0.1; b = np.linspace(0.0,1.0,10)[run//50]
     #a = 0.0; b =0.5
     deltay = 1.0; ystar = 1.0
 
@@ -79,6 +77,7 @@ else:   #for the tanh cutoff
     ystar = np.linspace(0.0,0.5,10)[run//50]
     deltay = ystar/10
 
+buoyant_factor = 0.0
 nu0_decay = 0.0
 
 variables = np.zeros((30))
@@ -112,7 +111,7 @@ variables[21] = nx   #init id  (id of initial condition)
 variables[22] = nu0_decay
 
 variables[23] = int(decay_type)
-
+variables[24] = buoyant_factor
 
 if hamilton_flag < 0.5:
     string = '/extra/tmp/trcn27/mf2d/%03d' % run

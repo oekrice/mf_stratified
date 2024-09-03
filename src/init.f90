@@ -86,6 +86,8 @@ SUBROUTINE read_parameters()
 
     decay_type = int(variables(24))
 
+    buoyant_factor = variables(25)
+
     print*, 'Importing parameters from file', init_id
     print*, 'Output directory', output_directory
 
