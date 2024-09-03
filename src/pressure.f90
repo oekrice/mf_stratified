@@ -17,6 +17,7 @@ CONTAINS
 SUBROUTINE pressure_function()
 
     !Input the pressure function f(y) here - note y is the vertical coordinate like LARE
+    !Should this be positive or negative?!?!
     implicit none
     integer:: j
 
@@ -24,7 +25,7 @@ SUBROUTINE pressure_function()
         if (decay_type < 0.5) then
             fy(:,j) = a*(1.0_num - b*tanh((ys(j)-ystar)/deltay))
         else
-            fy(:,j) = -b*exp(-ys(j)/a)
+            fy(:,j) = b*exp(-ys(j)/a)
         end if
     end do
 

@@ -221,22 +221,26 @@ SUBROUTINE set_outflow()
     ! vouts is on gridpoints (like az), voutc is on x ribs (like ax). To allow for upwinding
     ! Need to take care with all this...
     CHARACTER(LEN =64):: input_directory
-
+    INTEGER:: j
     allocate(vouts(-2:nx+2,-2:ny+2))
     allocate(voutc(-1:nx+2,-2:ny+2))
 
-    if (init_id < 10) then
-    write (input_directory, "(A10, A2, I1, A4)") './inits/vy', '00', init_id, '.txt'
-    else if (init_id < 100) then
-    write (input_directory, "(A10, A1, I2, A4)") './inits/vy', '0', init_id, '.txt'
-    else
-    write (input_directory, "(A10, I3, A4)") './inits/vy', init_id, '.txt'
+    if (.false.) then  !Import outflow function from initial LARE version
+        if (init_id < 10) then
+        write (input_directory, "(A10, A2, I1, A4)") './inits/vy', '00', init_id, '.txt'
+        else if (init_id < 100) then
+        write (input_directory, "(A10, A1, I2, A4)") './inits/vy', '0', init_id, '.txt'
+        else
+        write (input_directory, "(A10, I3, A4)") './inits/vy', init_id, '.txt'
+        end if
+
+        open(1,file = input_directory)
+        read(1,*) vouts(-2:nx+2,-2:ny+2)
+    else        !Instead define as an explicit function
+        do j = -2, ny+2
+            vouts(:,j) = (ys(j)/ys(ny))**4
+        end do
     end if
-
-
-    open(1,file = input_directory)
-    read(1,*) vouts(-2:nx+2,-2:ny+2)
-
     voutc(-1:nx+2,-2:ny+2) = 0.5*(vouts(-2:nx+1,-2:ny+2)+vouts(-1:nx+2,-2:ny+2))
 
 END SUBROUTINE set_outflow
