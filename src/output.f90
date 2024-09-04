@@ -20,7 +20,6 @@ SUBROUTINE diagnostics(diag_num)
     character(len=100):: filename
 
     integer:: id_1, id_2, id_3, id_4, id_5, id_6, id_7, id_8, id_9, ncid, nd_id
-    integer:: j
 
     real(num), dimension(:,:):: jx0(0:nx-1,0:ny-1),jy0(0:nx-1,0:ny-1),jz0(0:nx-1,0:ny-1) !Current averaged to grid centres
     real(num), dimension(:,:):: j0(0:nx-1,0:ny-1)
@@ -91,10 +90,8 @@ SUBROUTINE diagnostics(diag_num)
     !FLUX ROPE THINGS
     az_slice(-2:ny+2) = -az(nx/2,-2:ny+2)
 
-    diag = 0.0_num
-    do j = 0, ny
-        diag = maxval(az_slice) - max(az_slice(0), az_slice(ny))
-    end do
+    diag  = maxval(az_slice) - az_slice(0)
+
     diag_rflux(diag_num) = diag
 
     diag = ys(maxloc(az_slice,1)-2)
