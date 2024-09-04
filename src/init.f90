@@ -86,6 +86,8 @@ SUBROUTINE read_parameters()
 
     decay_type = int(variables(24))
 
+    buoyant_factor = variables(25)
+
     print*, 'Importing parameters from file', init_id
     print*, 'Output directory', output_directory
 
@@ -128,7 +130,7 @@ SUBROUTINE establish_grid()
     allocate(jpz1(-2:nx+2,-2:ny+2))
 
     allocate(vout_masks(-2:nx+2,-2:ny+2));  allocate(vout_maskc(-1:nx+2,-2:ny+2))
-
+    allocate(buoy_masks(-2:nx+2,-2:ny+2));  allocate(buoy_maskc(-1:nx+2,-2:ny+2))
 
     ! Establish the actual grid
     do i = -2, nx + 2

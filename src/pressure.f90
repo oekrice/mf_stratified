@@ -25,7 +25,7 @@ SUBROUTINE pressure_function()
         if (decay_type < 0.5) then
             fy(:,j) = a*(1.0_num - b*tanh((ys(j)-ystar)/deltay))
         else
-            fy(:,j) = b*exp(-ys(j)/a)
+            fy(:,j) = a*exp(-ys(j)/b)
         end if
     end do
 

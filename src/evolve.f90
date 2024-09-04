@@ -31,6 +31,13 @@ SUBROUTINE timestep()
         vout_maskc(-1:nx+2,:) = 0.5_num*(vout_masks(-2:nx+1,:) + vout_masks(-1:nx+2,:))
     end if
 
+    if (mod(n,int(0.01_num/dt)) == 0) then
+        buoy_masks = merge(-1.0,0.0, az < minval(az(0:nx,0)))
+        buoy_masks(-1:nx+1,-1:ny+1) = 0.25_num*(buoy_masks(0:nx+2,0:ny+2) + buoy_masks(0:nx+2,-1:ny+1) + &
+        buoy_masks(-1:nx+1,0:ny+2) + buoy_masks(-1:nx+1,-1:ny+1))
+        buoy_maskc(-1:nx+2,:) = 0.5_num*(buoy_masks(-2:nx+1,:) + buoy_masks(-1:nx+2,:))
+    end if
+
     CALL calculate_electric()
 
 
@@ -102,6 +109,8 @@ SUBROUTINE calculate_velocity()
     vy(0:nx,0:ny) = nu0_field(0:nx,0:ny)*(jz1(0:nx,0:ny)*bx1(0:nx,0:ny) - jx1(0:nx,0:ny)*bz1(0:nx,0:ny))/nu(0:nx,0:ny)
     vz(0:nx,0:ny) = nu0_field(0:nx,0:ny)*(jx1(0:nx,0:ny)*by1(0:nx,0:ny) - jy1(0:nx,0:ny)*bx1(0:nx,0:ny))/nu(0:nx,0:ny)
 
+    vy(0:nx,0:ny) = vy(0:nx,0:ny) + buoyant_factor*buoy_masks(0:nx,0:ny)
+
     vx(:,0) = 0.0; vy(:,0) = 0.0; vz(:,0) = 0.0  !Ensure zero velocity directly on the lower boundary.
 
 END SUBROUTINE calculate_velocity
@@ -127,6 +136,13 @@ SUBROUTINE calculate_electric()
 
     end if
 
+    !Add 'buoyant' velocity, assuming that with stratification the rope is heavier than the background and will resist eruption
+    !Require backwards upwinding maybe...
+
+    !ex(1:nx, 0:ny) = ex(1:nx, 0:ny) - bz(1:nx, 0:ny)*buoyant_factor*buoy_maskc(1:nx, 0:ny) !is upwinding here
+    !ez(0:nx, 0:ny) = ez(0:nx, 0:ny) + bx(1:nx+1, 0:ny)*buoyant_factor*buoy_masks(0:nx, 0:ny)
+
+    !Add outflow
     ex(1:nx, 0:ny) = ex(1:nx, 0:ny) - bz(1:nx, 0:ny)*voutc(1:nx, 0:ny)*vout_maskc(1:nx, 0:ny) !is upwinding here
     ez(0:nx, 0:ny) = ez(0:nx, 0:ny) + bx(0:nx, 0:ny)*vouts(0:nx, 0:ny)*vout_masks(0:nx, 0:ny)
 

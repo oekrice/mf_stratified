@@ -64,8 +64,10 @@ MODULE shared_data
     REAL(num), DIMENSION(:,:), ALLOCATABLE :: vpx, vpy, vpz
     REAL(num), DIMENSION(:,:), ALLOCATABLE :: jpz1
     REAL(num), DIMENSION(:,:), ALLOCATABLE :: vout_masks, vout_maskc
+    REAL(num), DIMENSION(:,:), ALLOCATABLE :: buoy_masks, buoy_maskc
+
     LOGICAL:: smart_velocity
-    REAL(num):: nu0_decay
+    REAL(num):: nu0_decay, buoyant_factor
     !Diagnostics
     REAL(num), DIMENSION(:), ALLOCATABLE:: diag_time
     REAL(num), DIMENSION(:), ALLOCATABLE:: diag_oflux
