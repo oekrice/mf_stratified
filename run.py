@@ -54,10 +54,11 @@ tmax = 150.0/time_unit
 
 eta = 1e-6
 
-nu0 = np.geomspace(0.05,0.2)[5]
-eta0 = np.geomspace(7.5e-4,1.25e-3,10)[5]
+nu0 = np.geomspace(0.05,0.2)[(run%50)//10]
+eta0 = np.geomspace(7.5e-4,1.25e-3,10)[(run%50)%10]
 
 decay_type = 1   #1 for exponential, 0 for tanh
+use_buoyant = True
 
 def lbound_fn(x):
     #Outputs lower boundary radial magnetic field as a function of position x
@@ -67,17 +68,23 @@ def lbound_fn(x):
 def zero_fn(x):
     return 0.0
 
-if decay_type > 0.5: #exponential decay
-    a = 0.1; b = np.linspace(0.0,1.0,10)[0]
-    #a = 0.0; b =0.5
+if not use_buoyant:
+    if decay_type > 0.5: #exponential decay
+        a = np.linspace(0.0,0.5,10)[run//50]; b = 0.1
+        #a = 0.0; b =0.5
+        deltay = 1.0; ystar = 1.0
+
+    else:   #for the tanh cutoff
+        a = 0.25; b = 1.0
+        ystar = np.linspace(0.0,0.3,10)[run//50]
+        deltay = ystar/10
+    buoyant_factor = 0.0
+
+else:
+    a = 0.0; b = 0.0
     deltay = 1.0; ystar = 1.0
+    buoyant_factor = 0.002*(run//50)
 
-else:   #for the tanh cutoff
-    a = 0.25; b = 1.0
-    ystar = np.linspace(0.0,0.5,10)[run//50]
-    deltay = ystar/10
-
-buoyant_factor = 0.01*run
 nu0_decay = 0.0
 
 variables = np.zeros((30))
