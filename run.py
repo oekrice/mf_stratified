@@ -57,7 +57,7 @@ eta = 1e-6
 nu0 = np.geomspace(0.025,0.1,10)[(run%50)//10]
 eta0 = np.geomspace(7.5e-4,1.25e-3,10)[(run%50)%10]
 
-decay_type = 2
+decay_type = 1
 use_buoyant = False
 
 def lbound_fn(x):

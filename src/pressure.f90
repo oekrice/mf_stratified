@@ -23,6 +23,7 @@ SUBROUTINE pressure_function()
 
     do j = 0, ny
         if (ystar < 0.01) then
+            if (j == 0) print*, 'Base case, no pressure function'
             fy(:,j) = 0.0_num
         else
             if (decay_type == 0) then
