@@ -18,6 +18,7 @@ SUBROUTINE diagnostics(diag_num)
     INTEGER:: diag_num
     REAL(num):: diag
     character(len=100):: filename
+    character(len=18):: filename_base
 
     integer:: id_1, id_2, id_3, id_4, id_5, id_6, id_7, id_8, id_9, ncid, nd_id
 
@@ -98,13 +99,19 @@ SUBROUTINE diagnostics(diag_num)
     diag_rheight(diag_num) = diag
     !ADMIN
 
+    if (decay_type == 0) filename_base = "./diagnostics_raw/"
+    if (decay_type == 1) filename_base = "./diagnostics_exp/"
+    if (decay_type == 2) filename_base = "./diagnostics_smo/"
+    if (decay_type == 3) filename_base = "./diagnostics_sha/"
+
     if (run_number < 10) then
-        write (filename, "(A19,I1,A3)") "./diagnostics/run00", int(run_number), ".nc"
+        write (filename, "(A18,A5,I1,A3)") filename_base, "run00", int(run_number), ".nc"
     else if (run_number < 100) then
-        write (filename, "(A18,I2,A3)") "./diagnostics/run0", int(run_number), ".nc"
+        write (filename, "(A18,A4,I2,A3)") filename_base, "run0", int(run_number), ".nc"
     else
-        write (filename, "(A17,I3,A3)") "./diagnostics/run", int(run_number), ".nc"
+        write (filename, "(A18,A3,I3,A3)") filename_base, "run", int(run_number), ".nc"
     end if
+
 
     !Write to diagnostics file, using netcdf
     call try(nf90_create(trim(filename), nf90_clobber, ncid))

@@ -93,11 +93,17 @@ SUBROUTINE read_parameters()
 
     print*, 'eta0 = ', eta0
     print*, 'nu0 = ', nu0
+
     print*, 'ystar = ', ystar
     print*, 'a = ', a
-    
-    if (decay_type > 0.5) print*, 'Exponential pressure decay'
-    if (decay_type < 0.5) print*, 'Tanh pressure decay'
+    print*, 'b = ', b
+    print*, 'deltay = ', deltay
+
+    if (decay_type == 0) print*, 'No pressure'
+    if (decay_type == 1) print*, 'Exponential pressure decay'
+    if (decay_type == 2) print*, 'Smooth tanh pressure decay'
+    if (decay_type == 3) print*, 'Sharp tanh pressure decay'
+
 
 END SUBROUTINE read_parameters
 

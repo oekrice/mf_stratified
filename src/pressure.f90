@@ -22,10 +22,18 @@ SUBROUTINE pressure_function()
     integer:: j
 
     do j = 0, ny
-        if (decay_type < 0.5) then
-            fy(:,j) = a*(1.0_num - b*tanh((ys(j)-ystar)/deltay))
+        if (ystar < 0.01) then
+            fy(:,j) = 0.0_num
         else
-            fy(:,j) = a*exp(-ys(j)/b)
+            if (decay_type == 0) then
+                fy(:,j) = 0.0_num
+            else if (decay_type == 1) then  !Exponential
+                fy(:,j) = a*exp(-ys(j)/b)
+            else if (decay_type == 2) then !Smooth tanh
+                fy(:,j) = a*(1.0_num - b*tanh((ys(j)-ystar)/deltay))
+            else !Sharp tanh
+                fy(:,j) = a*(1.0_num - b*tanh((ys(j)-ystar)/deltay))
+            end if
         end if
     end do
 

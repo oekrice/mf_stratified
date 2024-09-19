@@ -54,11 +54,11 @@ tmax = 150.0/time_unit
 
 eta = 1e-6
 
-nu0 = np.geomspace(0.05,0.2)[(run%50)//10]
+nu0 = np.geomspace(0.025,0.1,10)[(run%50)//10]
 eta0 = np.geomspace(7.5e-4,1.25e-3,10)[(run%50)%10]
 
-decay_type = 1   #1 for exponential, 0 for tanh
-use_buoyant = True
+decay_type = 2
+use_buoyant = False
 
 def lbound_fn(x):
     #Outputs lower boundary radial magnetic field as a function of position x
@@ -69,15 +69,31 @@ def zero_fn(x):
     return 0.0
 
 if not use_buoyant:
-    if decay_type > 0.5: #exponential decay
-        a = np.linspace(0.0,0.5,10)[run//50]; b = 0.1
-        #a = 0.0; b =0.5
-        deltay = 1.0; ystar = 1.0
 
-    else:   #for the tanh cutoff
+    #NOT rope weight (can modify later if we need to do both)
+
+    #Decay types are: 1 for exponential, 2 for smooth and 3 for sharp
+    #0 for no decay at all
+
+    if decay_type == 0: #No pressure
+        ystar = 0.0; a = 0.0; b = 0.0; deltay = 0.0
+
+    if decay_type == 1: #exponential decay
+        ystar = np.linspace(0.0,0.3,10)[run//50]
+        b = ystar/np.log(2)
+        a = 0.5
+        deltay = 0.0
+
+    if decay_type == 2: #smooth tanh
         a = 0.25; b = 1.0
         ystar = np.linspace(0.0,0.3,10)[run//50]
-        deltay = ystar/10
+        deltay = 0.1
+
+    if decay_type == 3: #sharp tanh
+        a = 0.25; b = 1.0
+        ystar = np.linspace(0.0,0.3,10)[run//50]
+        deltay = 0.02
+
     buoyant_factor = 0.0
 
 else:
@@ -127,6 +143,15 @@ else:
 
 if not os.path.exists(string[:-4]):
     os.mkdir(string[:-4])
+
+diag_names = ['raw', 'exp', 'smo', 'sha']
+diag_fname = 'diagnostics_' + diag_names[decay_type]
+
+if use_buoyant:
+    diag_fname = 'diagnostics_' + 'wei'
+
+if not os.path.exists(diag_fname):
+    os.mkdir(diag_fname)
 
 
 if os.path.exists(string):
